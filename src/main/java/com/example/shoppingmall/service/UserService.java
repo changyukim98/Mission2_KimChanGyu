@@ -1,5 +1,6 @@
 package com.example.shoppingmall.service;
 
+import com.example.shoppingmall.AuthenticationFacade;
 import com.example.shoppingmall.dto.EssentialInfoDto;
 import com.example.shoppingmall.dto.LoginDto;
 import com.example.shoppingmall.dto.RegisterDto;
@@ -36,6 +37,7 @@ public class UserService {
     private final BusinessRepository businessRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenUtils jwtTokenUtils;
+    private final AuthenticationFacade facade;
 
     // 유저 계정 생성
     public void createUser(RegisterDto registerDto) {
@@ -64,7 +66,7 @@ public class UserService {
 
     // 필수 정보 입력
     public void fillEssential(EssentialInfoDto dto) {
-        CustomUserDetails userDetails = getCurrentUserDetails();
+        CustomUserDetails userDetails = facade.getCurrentUserDetails();
 
         userDetails.setNickname(dto.getNickname());
         userDetails.setFirstName(dto.getFirstName());
@@ -78,7 +80,7 @@ public class UserService {
     }
 
     public void updateProfileImage(String profileImagePath) {
-        CustomUserDetails userDetails = getCurrentUserDetails();
+        CustomUserDetails userDetails = facade.getCurrentUserDetails();
 
         userDetails.setProfileImagePath(profileImagePath);
         userDetailsManager.updateUser(userDetails);
@@ -120,7 +122,7 @@ public class UserService {
 
     @Transactional
     public void businessRegister(String businessNum) {
-        CustomUserDetails userDetails = getCurrentUserDetails();
+        CustomUserDetails userDetails = facade.getCurrentUserDetails();
 
         // ROLE_USER에서만 사업자 유저로 업그레이드 신청 가능
         if (!userDetails.getRole().equals("ROLE_USER"))
@@ -135,7 +137,7 @@ public class UserService {
     }
 
     public List<BusinessRegistration> readBusinessRegistration() {
-        CustomUserDetails userDetails = getCurrentUserDetails();
+        CustomUserDetails userDetails = facade.getCurrentUserDetails();
 
         // ROLE_ADMIN에서만 조회 가능
         if (!userDetails.getRole().equals("ROLE_ADMIN"))
@@ -146,7 +148,7 @@ public class UserService {
 
     @Transactional
     public void acceptBusinessRegistration(Long id) {
-        CustomUserDetails userDetails = getCurrentUserDetails();
+        CustomUserDetails userDetails = facade.getCurrentUserDetails();
 
         // ROLE_ADMIN에서만 승인 가능
         if (!userDetails.getRole().equals("ROLE_ADMIN"))
@@ -170,7 +172,7 @@ public class UserService {
     }
 
     public void declineBusinessRegistration(Long id) {
-        CustomUserDetails userDetails = getCurrentUserDetails();
+        CustomUserDetails userDetails = facade.getCurrentUserDetails();
 
         // ROLE_ADMIN에서만 거절 가능
         if (!userDetails.getRole().equals("ROLE_ADMIN"))
@@ -181,16 +183,5 @@ public class UserService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 
         businessRepository.deleteById(id);
-    }
-
-    public CustomUserDetails getCurrentUserDetails() {
-        String username
-                = SecurityContextHolder.getContext().getAuthentication().getName();
-        try {
-            return (CustomUserDetails) userDetailsManager.loadUserByUsername(username);
-        } catch (ClassCastException e) {
-            log.error("Failed Cast to: {}", CustomUserDetails.class);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
     }
 }
