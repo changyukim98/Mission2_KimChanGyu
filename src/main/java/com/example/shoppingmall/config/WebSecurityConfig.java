@@ -35,7 +35,9 @@ public class WebSecurityConfig {
                                         "/users/current-user",
                                         "/users/fill-essential",
                                         "/users/update-avatar",
-                                        "/users/business"
+                                        "/users/business",
+                                        "/users/business/{id}/accept",
+                                        "/users/business/{id}/decline"
                                 )
                                 .authenticated()
 

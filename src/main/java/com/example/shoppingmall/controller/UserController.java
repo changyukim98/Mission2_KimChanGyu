@@ -66,25 +66,17 @@ public class UserController {
     }
 
     @PostMapping("/business")
-    public String upgradeToBusiness(
+    public String businessRegister(
             @RequestParam("business-number")
             String businessNumber
     ) {
-        userService.upgradeToBusiness(businessNumber);
+        userService.businessRegister(businessNumber);
         return "done";
     }
 
     @GetMapping("/business")
-    public List<UserEntity> readBusinessRegistrations() {
+    public List<BusinessRegistration> readBusinessRegistrations() {
         return userService.readBusinessRegistration();
-    }
-
-    @PostMapping("/business/{id}/decline")
-    public String declineBusinessRegistration(
-            @PathVariable("id")
-            Long id
-    ) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
     }
 
     @PostMapping("/business/{id}/accept")
@@ -92,7 +84,16 @@ public class UserController {
             @PathVariable("id")
             Long id
     ) {
-        // TODO
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
+        userService.acceptBusinessRegistration(id);
+        return "done";
+    }
+
+    @PostMapping("/business/{id}/decline")
+    public String declineBusinessRegistration(
+            @PathVariable("id")
+            Long id
+    ) {
+        userService.declineBusinessRegistration(id);
+        return "done";
     }
 }

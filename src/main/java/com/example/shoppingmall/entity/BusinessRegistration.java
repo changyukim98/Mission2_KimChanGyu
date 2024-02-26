@@ -16,4 +16,6 @@ public class BusinessRegistration {
     @Setter
     @OneToOne
     private UserEntity user;
+    @Setter
+    private String businessNum;
 }

@@ -38,12 +38,8 @@ public class JpaUserDetailsManager implements UserDetailsManager {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 
         try {
-            CustomUserDetails userDetail = (CustomUserDetails) user;
-            UserEntity newUser = UserEntity.builder()
-                    .username(userDetail.getUsername())
-                    .password(userDetail.getPassword())
-                    .role(userDetail.getRole())
-                    .build();
+            CustomUserDetails userDetails = (CustomUserDetails) user;
+            UserEntity newUser = UserEntity.fromUserDetails(userDetails);
             userRepository.save(newUser);
         } catch (ClassCastException e) {
             log.error("Failed Cast to: {}", CustomUserDetails.class);
@@ -54,21 +50,8 @@ public class JpaUserDetailsManager implements UserDetailsManager {
     @Override
     public void updateUser(UserDetails user) {
         try {
-            CustomUserDetails userDetail = (CustomUserDetails) user;
-            UserEntity userEntity = UserEntity.builder()
-                    .id(userDetail.getId())
-                    .username(userDetail.getUsername())
-                    .password(userDetail.getPassword())
-                    .nickname(userDetail.getNickname())
-                    .firstName(userDetail.getFirstName())
-                    .lastName(userDetail.getLastName())
-                    .age(userDetail.getAge())
-                    .email(userDetail.getEmail())
-                    .phone(userDetail.getPhone())
-                    .profileImagePath(userDetail.getProfileImagePath())
-                    .role(userDetail.getRole())
-                    .businessNum(userDetail.getBusinessNum())
-                    .build();
+            CustomUserDetails userDetails = (CustomUserDetails) user;
+            UserEntity userEntity = UserEntity.fromUserDetails(userDetails);
             userRepository.save(userEntity);
         } catch (ClassCastException e) {
             log.error("Failed Cast to: {}", CustomUserDetails.class);
@@ -98,20 +81,7 @@ public class JpaUserDetailsManager implements UserDetailsManager {
             throw new UsernameNotFoundException(username);
 
         UserEntity userEntity = optionalUser.get();
-        return CustomUserDetails.builder()
-                .id(userEntity.getId())
-                .username(userEntity.getUsername())
-                .password(userEntity.getPassword())
-                .nickname(userEntity.getNickname())
-                .firstName(userEntity.getFirstName())
-                .lastName(userEntity.getLastName())
-                .age(userEntity.getAge())
-                .email(userEntity.getEmail())
-                .phone(userEntity.getPhone())
-                .profileImagePath(userEntity.getProfileImagePath())
-                .role(userEntity.getRole())
-                .businessNum(userEntity.getBusinessNum())
-                .build();
+        return CustomUserDetails.fromUserEntity(userEntity);
     }
 
     public UserEntity loadUserEntityByUsername(String username) {

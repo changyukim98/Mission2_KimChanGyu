@@ -86,4 +86,21 @@ public class CustomUserDetails implements UserDetails {
     public boolean isEnabled() {
         return false;
     }
+
+    public static CustomUserDetails fromUserEntity(UserEntity userEntity) {
+        return CustomUserDetails.builder()
+                .id(userEntity.getId())
+                .username(userEntity.getUsername())
+                .password(userEntity.getPassword())
+                .nickname(userEntity.getNickname())
+                .firstName(userEntity.getFirstName())
+                .lastName(userEntity.getLastName())
+                .age(userEntity.getAge())
+                .email(userEntity.getEmail())
+                .phone(userEntity.getPhone())
+                .profileImagePath(userEntity.getProfileImagePath())
+                .role(userEntity.getRole())
+                .businessNum(userEntity.getBusinessNum())
+                .build();
+    }
 }

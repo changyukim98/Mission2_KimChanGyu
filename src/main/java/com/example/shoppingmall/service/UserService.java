@@ -3,7 +3,6 @@ package com.example.shoppingmall.service;
 import com.example.shoppingmall.dto.EssentialInfoDto;
 import com.example.shoppingmall.dto.LoginDto;
 import com.example.shoppingmall.dto.RegisterDto;
-import com.example.shoppingmall.dto.UserDto;
 import com.example.shoppingmall.entity.BusinessRegistration;
 import com.example.shoppingmall.entity.CustomUserDetails;
 import com.example.shoppingmall.entity.UserEntity;
@@ -26,12 +25,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
+    private final UserRepository userRepository;
     private final JpaUserDetailsManager userDetailsManager;
     private final BusinessRepository businessRepository;
     private final PasswordEncoder passwordEncoder;
@@ -64,10 +64,7 @@ public class UserService {
 
     // 필수 정보 입력
     public void fillEssential(EssentialInfoDto dto) {
-        String username =
-                SecurityContextHolder.getContext().getAuthentication().getName();
-        CustomUserDetails userDetails
-                = (CustomUserDetails) userDetailsManager.loadUserByUsername(username);
+        CustomUserDetails userDetails = getCurrentUserDetails();
 
         userDetails.setNickname(dto.getNickname());
         userDetails.setFirstName(dto.getFirstName());
@@ -81,10 +78,7 @@ public class UserService {
     }
 
     public void updateProfileImage(String profileImagePath) {
-        String username =
-                SecurityContextHolder.getContext().getAuthentication().getName();
-        CustomUserDetails userDetails
-                = (CustomUserDetails) userDetailsManager.loadUserByUsername(username);
+        CustomUserDetails userDetails = getCurrentUserDetails();
 
         userDetails.setProfileImagePath(profileImagePath);
         userDetailsManager.updateUser(userDetails);
@@ -125,40 +119,78 @@ public class UserService {
     }
 
     @Transactional
-    public void upgradeToBusiness(String businessNum) {
-        String username
-                = SecurityContextHolder.getContext().getAuthentication().getName();
-        CustomUserDetails userDetails
-                = (CustomUserDetails) userDetailsManager.loadUserByUsername(username);
+    public void businessRegister(String businessNum) {
+        CustomUserDetails userDetails = getCurrentUserDetails();
 
-        // ROLE_USER에서만 사업자 유저로 업그레이드 가능
+        // ROLE_USER에서만 사업자 유저로 업그레이드 신청 가능
         if (!userDetails.getRole().equals("ROLE_USER"))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
         BusinessRegistration businessRegistration
                 = BusinessRegistration.builder()
-                .user(userDetailsManager.loadUserEntityByUsername(username))
+                .user(userDetailsManager.loadUserEntityByUsername(userDetails.getUsername()))
+                .businessNum(businessNum)
                 .build();
         businessRepository.save(businessRegistration);
-
-        userDetails.setBusinessNum(businessNum);
-        userDetails.setRole("ROLE_BUSINESS");
-        userDetailsManager.updateUser(userDetails);
     }
 
-    public List<UserEntity> readBusinessRegistration() {
-        String username
-                = SecurityContextHolder.getContext().getAuthentication().getName();
-        CustomUserDetails userDetails
-                = (CustomUserDetails) userDetailsManager.loadUserByUsername(username);
+    public List<BusinessRegistration> readBusinessRegistration() {
+        CustomUserDetails userDetails = getCurrentUserDetails();
 
         // ROLE_ADMIN에서만 조회 가능
         if (!userDetails.getRole().equals("ROLE_ADMIN"))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
-        return businessRepository.findAll().stream()
-                .map(BusinessRegistration::getUser)
-                .toList();
+        return businessRepository.findAll();
+    }
 
+    @Transactional
+    public void acceptBusinessRegistration(Long id) {
+        CustomUserDetails userDetails = getCurrentUserDetails();
+
+        // ROLE_ADMIN에서만 승인 가능
+        if (!userDetails.getRole().equals("ROLE_ADMIN"))
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+
+        // 가입 신청이 존재하지 않는 경우
+        Optional<BusinessRegistration> optionalRegistration = businessRepository.findById(id);
+        if (optionalRegistration.isEmpty())
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+
+        BusinessRegistration registration = optionalRegistration.get();
+        UserEntity userEntity = registration.getUser();
+
+        // 일반 유저일 경우에만 업그레이드 가능
+        if (!userEntity.getRole().equals("ROLE_USER"))
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+
+        userEntity.setRole("ROLE_BUSINESS");
+        userRepository.save(userEntity);
+        businessRepository.delete(registration);
+    }
+
+    public void declineBusinessRegistration(Long id) {
+        CustomUserDetails userDetails = getCurrentUserDetails();
+
+        // ROLE_ADMIN에서만 거절 가능
+        if (!userDetails.getRole().equals("ROLE_ADMIN"))
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+
+        // 가입 신청이 존재하지 않는 경우
+        if (!businessRepository.existsById(id))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+
+        businessRepository.deleteById(id);
+    }
+
+    public CustomUserDetails getCurrentUserDetails() {
+        String username
+                = SecurityContextHolder.getContext().getAuthentication().getName();
+        try {
+            return (CustomUserDetails) userDetailsManager.loadUserByUsername(username);
+        } catch (ClassCastException e) {
+            log.error("Failed Cast to: {}", CustomUserDetails.class);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }
