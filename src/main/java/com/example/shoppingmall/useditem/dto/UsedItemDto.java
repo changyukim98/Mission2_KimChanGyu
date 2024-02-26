@@ -1,13 +1,13 @@
-package com.example.shoppingmall.dto;
+package com.example.shoppingmall.useditem.dto;
 
-import com.example.shoppingmall.entity.Item;
+import com.example.shoppingmall.useditem.entity.UsedItem;
 import lombok.*;
 
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ItemDto {
+public class UsedItemDto {
     private Long id;
 
     @Setter
@@ -21,8 +21,8 @@ public class ItemDto {
 
     private Long userId;
 
-    public static ItemDto fromEntity(Item entity) {
-        return ItemDto.builder()
+    public static UsedItemDto fromEntity(UsedItem entity) {
+        return UsedItemDto.builder()
                 .id(entity.getId())
                 .title(entity.getTitle())
                 .description(entity.getDescription())

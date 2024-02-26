@@ -1,16 +1,16 @@
-package com.example.shoppingmall.service;
+package com.example.shoppingmall.user.service;
 
 import com.example.shoppingmall.AuthenticationFacade;
-import com.example.shoppingmall.dto.EssentialInfoDto;
-import com.example.shoppingmall.dto.LoginDto;
-import com.example.shoppingmall.dto.RegisterDto;
-import com.example.shoppingmall.entity.BusinessRegistration;
-import com.example.shoppingmall.entity.CustomUserDetails;
-import com.example.shoppingmall.entity.UserEntity;
+import com.example.shoppingmall.user.dto.EssentialInfoDto;
+import com.example.shoppingmall.user.dto.LoginDto;
+import com.example.shoppingmall.user.dto.RegisterDto;
+import com.example.shoppingmall.user.entity.BusinessRegistration;
+import com.example.shoppingmall.user.entity.CustomUserDetails;
+import com.example.shoppingmall.user.entity.UserEntity;
 import com.example.shoppingmall.jwt.JwtTokenUtils;
 import com.example.shoppingmall.jwt.JwtResponseDto;
-import com.example.shoppingmall.repo.BusinessRepository;
-import com.example.shoppingmall.repo.UserRepository;
+import com.example.shoppingmall.user.repo.BusinessRepository;
+import com.example.shoppingmall.user.repo.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

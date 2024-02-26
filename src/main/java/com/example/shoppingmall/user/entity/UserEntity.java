@@ -1,8 +1,7 @@
-package com.example.shoppingmall.entity;
+package com.example.shoppingmall.user.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.security.core.userdetails.UserDetails;
 
 @Entity
 @Getter

@@ -1,8 +1,8 @@
-package com.example.shoppingmall.service;
+package com.example.shoppingmall.user.service;
 
-import com.example.shoppingmall.entity.CustomUserDetails;
-import com.example.shoppingmall.entity.UserEntity;
-import com.example.shoppingmall.repo.UserRepository;
+import com.example.shoppingmall.user.entity.CustomUserDetails;
+import com.example.shoppingmall.user.entity.UserEntity;
+import com.example.shoppingmall.user.repo.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;

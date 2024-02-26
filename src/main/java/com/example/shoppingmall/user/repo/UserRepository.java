@@ -1,6 +1,6 @@
-package com.example.shoppingmall.repo;
+package com.example.shoppingmall.user.repo;
 
-import com.example.shoppingmall.entity.UserEntity;
+import com.example.shoppingmall.user.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

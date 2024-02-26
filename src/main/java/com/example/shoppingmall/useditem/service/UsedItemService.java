@@ -1,12 +1,13 @@
-package com.example.shoppingmall.service;
+package com.example.shoppingmall.useditem.service;
 
 import com.example.shoppingmall.AuthenticationFacade;
-import com.example.shoppingmall.dto.ItemDto;
-import com.example.shoppingmall.entity.CustomUserDetails;
-import com.example.shoppingmall.entity.Item;
-import com.example.shoppingmall.entity.UserEntity;
-import com.example.shoppingmall.repo.ItemRepository;
-import com.example.shoppingmall.repo.UserRepository;
+import com.example.shoppingmall.useditem.repo.UsedItemRepository;
+import com.example.shoppingmall.useditem.dto.UsedItemDto;
+import com.example.shoppingmall.user.entity.CustomUserDetails;
+import com.example.shoppingmall.useditem.entity.UsedItem;
+import com.example.shoppingmall.user.entity.UserEntity;
+import com.example.shoppingmall.user.repo.UserRepository;
+import com.example.shoppingmall.user.service.JpaUserDetailsManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -19,64 +20,64 @@ import java.util.Optional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ItemService {
-    private final ItemRepository itemRepository;
+public class UsedItemService {
+    private final UsedItemRepository usedItemRepository;
     private final UserRepository userRepository;
     private final JpaUserDetailsManager manager;
     private final AuthenticationFacade facade;
 
-    public ItemDto createItem(ItemDto dto) {
+    public UsedItemDto createUsedItem(UsedItemDto dto) {
         CustomUserDetails userDetails = facade.getCurrentUserDetails();
 
         if (!userDetails.getRole().equals("ROLE_USER"))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
-        Item item = Item.builder()
+        UsedItem usedItem = UsedItem.builder()
                 .title(dto.getTitle())
                 .description(dto.getDescription())
                 .price(dto.getPrice())
                 .user(UserEntity.fromUserDetails(userDetails))
                 .build();
-        return ItemDto.fromEntity(itemRepository.save(item));
+        return UsedItemDto.fromEntity(usedItemRepository.save(usedItem));
     }
 
-    public List<ItemDto> readAllItem() {
+    public List<UsedItemDto> readAllUsedItem() {
         CustomUserDetails userDetails = facade.getCurrentUserDetails();
 
         if (userDetails.getRole().equals("ROLE_INACTIVE"))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
-        return itemRepository.findAll().stream()
-                .map(ItemDto::fromEntity)
+        return usedItemRepository.findAll().stream()
+                .map(UsedItemDto::fromEntity)
                 .toList();
     }
 
-    public ItemDto updateItem(Long id, ItemDto dto) {
-        Optional<Item> optionalItem = itemRepository.findById(id);
+    public UsedItemDto updateUsedItem(Long id, UsedItemDto dto) {
+        Optional<UsedItem> optionalItem = usedItemRepository.findById(id);
         if (optionalItem.isEmpty())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 
         CustomUserDetails userDetails = facade.getCurrentUserDetails();
-        Item item = optionalItem.get();
-        if (!item.getUser().getId().equals(userDetails.getId()))
+        UsedItem usedItem = optionalItem.get();
+        if (!usedItem.getUser().getId().equals(userDetails.getId()))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
-        item.setTitle(dto.getTitle());
-        item.setDescription(dto.getDescription());
-        item.setPrice(dto.getPrice());
-        return ItemDto.fromEntity(itemRepository.save(item));
+        usedItem.setTitle(dto.getTitle());
+        usedItem.setDescription(dto.getDescription());
+        usedItem.setPrice(dto.getPrice());
+        return UsedItemDto.fromEntity(usedItemRepository.save(usedItem));
     }
 
-    public void deleteItem(Long id) {
-        Optional<Item> optionalItem = itemRepository.findById(id);
+    public void deleteUsedItem(Long id) {
+        Optional<UsedItem> optionalItem = usedItemRepository.findById(id);
         if (optionalItem.isEmpty())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 
-        Item item = optionalItem.get();
+        UsedItem usedItem = optionalItem.get();
         CustomUserDetails userDetails = facade.getCurrentUserDetails();
-        if (!item.getUser().getUsername().equals(userDetails.getUsername()))
+        if (!usedItem.getUser().getUsername().equals(userDetails.getUsername()))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
-        itemRepository.deleteById(id);
+        usedItemRepository.deleteById(id);
     }
 }

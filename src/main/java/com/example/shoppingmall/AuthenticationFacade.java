@@ -1,7 +1,7 @@
 package com.example.shoppingmall;
 
-import com.example.shoppingmall.entity.CustomUserDetails;
-import com.example.shoppingmall.service.JpaUserDetailsManager;
+import com.example.shoppingmall.user.entity.CustomUserDetails;
+import com.example.shoppingmall.user.service.JpaUserDetailsManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

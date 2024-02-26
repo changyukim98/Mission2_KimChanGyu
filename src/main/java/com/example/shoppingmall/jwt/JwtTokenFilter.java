@@ -1,6 +1,6 @@
 package com.example.shoppingmall.jwt;
 
-import com.example.shoppingmall.entity.CustomUserDetails;
+import com.example.shoppingmall.user.entity.CustomUserDetails;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

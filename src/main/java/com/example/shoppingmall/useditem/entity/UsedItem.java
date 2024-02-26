@@ -1,5 +1,6 @@
-package com.example.shoppingmall.entity;
+package com.example.shoppingmall.useditem.entity;
 
+import com.example.shoppingmall.user.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -8,7 +9,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Item {
+public class UsedItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

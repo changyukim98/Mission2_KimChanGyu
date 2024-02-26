@@ -1,19 +1,16 @@
-package com.example.shoppingmall.controller;
+package com.example.shoppingmall.user.controller;
 
-import com.example.shoppingmall.dto.EssentialInfoDto;
-import com.example.shoppingmall.dto.LoginDto;
-import com.example.shoppingmall.dto.RegisterDto;
-import com.example.shoppingmall.entity.BusinessRegistration;
-import com.example.shoppingmall.entity.UserEntity;
+import com.example.shoppingmall.user.dto.EssentialInfoDto;
+import com.example.shoppingmall.user.dto.LoginDto;
+import com.example.shoppingmall.user.dto.RegisterDto;
+import com.example.shoppingmall.user.entity.BusinessRegistration;
 import com.example.shoppingmall.jwt.JwtResponseDto;
-import com.example.shoppingmall.service.UserService;
+import com.example.shoppingmall.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
