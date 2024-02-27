@@ -39,7 +39,10 @@ public class WebSecurityConfig {
                                         "/users/business/{id}/decline",
                                         "/item",
                                         "/item/{id}",
-                                        "/item/{id}/proposal"
+                                        "/item/{id}/proposal",
+                                        "/proposal/{id}/accept",
+                                        "/proposal/{id}/decline",
+                                        "/proposal/{id}/confirm"
                                 )
                                 .authenticated()
 

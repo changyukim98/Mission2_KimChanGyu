@@ -35,7 +35,7 @@ public class UserDto {
                 entity.getEmail(),
                 entity.getPhone(),
                 entity.getProfileImagePath(),
-                entity.getRole(),
+                entity.getRole().name(),
                 entity.getBusinessNum());
     }
 }

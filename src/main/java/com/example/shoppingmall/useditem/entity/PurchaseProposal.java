@@ -21,5 +21,6 @@ public class PurchaseProposal {
     private UserEntity proposer;
 
     @Setter
+    @Enumerated(EnumType.STRING)
     private ProposalStatus status;
 }

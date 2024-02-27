@@ -2,11 +2,12 @@ package com.example.shoppingmall.useditem.service;
 
 import com.example.shoppingmall.AuthenticationFacade;
 import com.example.shoppingmall.useditem.dto.ProposalDto;
+import com.example.shoppingmall.useditem.dto.UsedItemDto;
+import com.example.shoppingmall.useditem.entity.ItemStatus;
 import com.example.shoppingmall.useditem.entity.ProposalStatus;
 import com.example.shoppingmall.useditem.entity.PurchaseProposal;
 import com.example.shoppingmall.useditem.repo.ProposalRepository;
 import com.example.shoppingmall.useditem.repo.UsedItemRepository;
-import com.example.shoppingmall.useditem.dto.UsedItemDto;
 import com.example.shoppingmall.user.UserRole;
 import com.example.shoppingmall.user.entity.CustomUserDetails;
 import com.example.shoppingmall.useditem.entity.UsedItem;
@@ -35,7 +36,7 @@ public class UsedItemService {
     public UsedItemDto createUsedItem(UsedItemDto dto) {
         CustomUserDetails userDetails = facade.getCurrentUserDetails();
 
-        if (!userDetails.getRole().equals(UserRole.USER))
+        if (!userDetails.getRole().equals(UserRole.ROLE_USER))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
         UsedItem usedItem = UsedItem.builder()
@@ -43,6 +44,7 @@ public class UsedItemService {
                 .description(dto.getDescription())
                 .price(dto.getPrice())
                 .user(UserEntity.fromUserDetails(userDetails))
+                .status(ItemStatus.ON_SALE)
                 .build();
         return UsedItemDto.fromEntity(usedItemRepository.save(usedItem));
     }
@@ -50,7 +52,7 @@ public class UsedItemService {
     public List<UsedItemDto> readAllUsedItem() {
         CustomUserDetails userDetails = facade.getCurrentUserDetails();
 
-        if (userDetails.getRole().equals(UserRole.INACTIVE))
+        if (userDetails.getRole().equals(UserRole.ROLE_INACTIVE))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
         return usedItemRepository.findAll().stream()
@@ -95,7 +97,7 @@ public class UsedItemService {
 
         CustomUserDetails userDetails = facade.getCurrentUserDetails();
         // 비활성회원은 구매 제안 불가
-        if (userDetails.getRole().equals(UserRole.INACTIVE))
+        if (userDetails.getRole().equals(UserRole.ROLE_INACTIVE))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
         UsedItem usedItem = optionalItem.get();
@@ -121,7 +123,7 @@ public class UsedItemService {
 
         // 비활성회원은 조회 불가
         CustomUserDetails userDetails = facade.getCurrentUserDetails();
-        if (userDetails.getRole().equals(UserRole.INACTIVE))
+        if (userDetails.getRole().equals(UserRole.ROLE_INACTIVE))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
         UsedItem usedItem = optionalItem.get();

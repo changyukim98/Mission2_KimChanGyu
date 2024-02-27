@@ -1,5 +1,6 @@
 package com.example.shoppingmall.user.entity;
 
+import com.example.shoppingmall.user.UserRole;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -33,7 +34,8 @@ public class UserEntity {
     @Setter
     private String profileImagePath;
     @Setter
-    private String role;
+    @Enumerated(EnumType.STRING)
+    private UserRole role;
     @Setter
     private String businessNum;
 

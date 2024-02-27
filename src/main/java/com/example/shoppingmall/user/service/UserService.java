@@ -45,7 +45,7 @@ public class UserService {
         CustomUserDetails userDetails = CustomUserDetails.builder()
                 .username(registerDto.getUsername())
                 .password(passwordEncoder.encode(registerDto.getPassword()))
-                .role(UserRole.INACTIVE)
+                .role(UserRole.ROLE_INACTIVE)
                 .build();
         userDetailsManager.createUser(userDetails);
     }
@@ -75,8 +75,8 @@ public class UserService {
         userDetails.setAge(dto.getAge());
         userDetails.setEmail(dto.getEmail());
         userDetails.setPhone(dto.getPhone());
-        if (userDetails.getRole().equals(UserRole.INACTIVE))
-            userDetails.setRole(UserRole.USER);
+        if (userDetails.getRole().equals(UserRole.ROLE_INACTIVE))
+            userDetails.setRole(UserRole.ROLE_USER);
         userDetailsManager.updateUser(userDetails);
     }
 
@@ -126,7 +126,7 @@ public class UserService {
         CustomUserDetails userDetails = facade.getCurrentUserDetails();
 
         // ROLE_USER에서만 사업자 유저로 업그레이드 신청 가능
-        if (!userDetails.getRole().equals(UserRole.USER))
+        if (!userDetails.getRole().equals(UserRole.ROLE_USER))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
         BusinessRegistration businessRegistration
@@ -141,7 +141,7 @@ public class UserService {
         CustomUserDetails userDetails = facade.getCurrentUserDetails();
 
         // ROLE_ADMIN에서만 조회 가능
-        if (!userDetails.getRole().equals(UserRole.ADMIN))
+        if (!userDetails.getRole().equals(UserRole.ROLE_ADMIN))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
         return businessRepository.findAll();
@@ -152,7 +152,7 @@ public class UserService {
         CustomUserDetails userDetails = facade.getCurrentUserDetails();
 
         // ROLE_ADMIN에서만 승인 가능
-        if (!userDetails.getRole().equals(UserRole.ADMIN))
+        if (!userDetails.getRole().equals(UserRole.ROLE_ADMIN))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
         // 가입 신청이 존재하지 않는 경우
@@ -164,10 +164,10 @@ public class UserService {
         UserEntity userEntity = registration.getUser();
 
         // 일반 유저일 경우에만 업그레이드 가능
-        if (!userEntity.getRole().equals(UserRole.USER))
+        if (!userEntity.getRole().equals(UserRole.ROLE_USER))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
-        userEntity.setRole(UserRole.BUSINESS);
+        userEntity.setRole(UserRole.ROLE_BUSINESS);
         userRepository.save(userEntity);
         businessRepository.delete(registration);
     }
@@ -176,7 +176,7 @@ public class UserService {
         CustomUserDetails userDetails = facade.getCurrentUserDetails();
 
         // ROLE_ADMIN에서만 거절 가능
-        if (!userDetails.getRole().equals(UserRole.ADMIN))
+        if (!userDetails.getRole().equals(UserRole.ROLE_ADMIN))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
         // 가입 신청이 존재하지 않는 경우

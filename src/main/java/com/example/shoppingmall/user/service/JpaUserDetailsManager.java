@@ -29,7 +29,7 @@ public class JpaUserDetailsManager implements UserDetailsManager {
         createUser(CustomUserDetails.builder()
                 .username("admin")
                 .password(passwordEncoder.encode("1234"))
-                .role(UserRole.ADMIN)
+                .role(UserRole.ROLE_ADMIN)
                 .build());
     }
 

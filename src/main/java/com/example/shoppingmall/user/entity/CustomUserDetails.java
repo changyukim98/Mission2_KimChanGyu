@@ -1,5 +1,6 @@
 package com.example.shoppingmall.user.entity;
 
+import com.example.shoppingmall.user.UserRole;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -43,7 +44,7 @@ public class CustomUserDetails implements UserDetails {
     private String profileImagePath;
     @Getter
     @Setter
-    private String role;
+    private UserRole role;
     @Getter
     @Setter
     private String businessNum;
@@ -51,7 +52,7 @@ public class CustomUserDetails implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority(this.role));
+        authorities.add(new SimpleGrantedAuthority(this.role.name()));
         System.out.println(authorities);
         return authorities;
     }

@@ -22,6 +22,9 @@ public class UsedItem {
     private Integer price;
     @Setter
     private String imagePath;
+    @Setter
+    @Enumerated(EnumType.STRING)
+    private ItemStatus status;
 
     @ManyToOne
     private UserEntity user;
