@@ -1,5 +1,6 @@
 package com.example.shoppingmall.user.service;
 
+import com.example.shoppingmall.user.UserRole;
 import com.example.shoppingmall.user.entity.CustomUserDetails;
 import com.example.shoppingmall.user.entity.UserEntity;
 import com.example.shoppingmall.user.repo.UserRepository;
@@ -28,7 +29,7 @@ public class JpaUserDetailsManager implements UserDetailsManager {
         createUser(CustomUserDetails.builder()
                 .username("admin")
                 .password(passwordEncoder.encode("1234"))
-                .role("ROLE_ADMIN")
+                .role(UserRole.ADMIN)
                 .build());
     }
 
