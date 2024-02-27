@@ -95,12 +95,16 @@ public class UsedItemService {
         if (optionalItem.isEmpty())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 
+        UsedItem usedItem = optionalItem.get();
+        // 판매 완료일시 새로운 제안 불가
+        if (!usedItem.getStatus().equals(ItemStatus.SOLD_OUT))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+
         CustomUserDetails userDetails = facade.getCurrentUserDetails();
         // 비활성회원은 구매 제안 불가
         if (userDetails.getRole().equals(UserRole.ROLE_INACTIVE))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
-        UsedItem usedItem = optionalItem.get();
         // 등록자와 구매자가 같은 경우 구매 제안 불가
         if (usedItem.getUser().getUsername().equals(userDetails.getUsername()))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
