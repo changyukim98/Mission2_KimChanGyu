@@ -1,4 +1,4 @@
-package com.example.shoppingmall.user;
+package com.example.shoppingmall.user.entity;
 
 public enum UserRole {
     ROLE_INACTIVE,

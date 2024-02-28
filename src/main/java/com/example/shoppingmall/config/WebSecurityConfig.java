@@ -42,7 +42,8 @@ public class WebSecurityConfig {
                                         "/item/{id}/proposal",
                                         "/proposal/{id}/accept",
                                         "/proposal/{id}/decline",
-                                        "/proposal/{id}/confirm"
+                                        "/proposal/{id}/confirm",
+                                        "/shop"
                                 )
                                 .authenticated()
 

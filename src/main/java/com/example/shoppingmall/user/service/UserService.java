@@ -1,7 +1,10 @@
 package com.example.shoppingmall.user.service;
 
 import com.example.shoppingmall.AuthenticationFacade;
-import com.example.shoppingmall.user.UserRole;
+import com.example.shoppingmall.shop.repo.ShopRepository;
+import com.example.shoppingmall.shop.entity.Shop;
+import com.example.shoppingmall.shop.entity.ShopStatus;
+import com.example.shoppingmall.user.entity.UserRole;
 import com.example.shoppingmall.user.dto.EssentialInfoDto;
 import com.example.shoppingmall.user.dto.LoginDto;
 import com.example.shoppingmall.user.dto.RegisterDto;
@@ -36,6 +39,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final JpaUserDetailsManager userDetailsManager;
     private final BusinessRepository businessRepository;
+    private final ShopRepository shopRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenUtils jwtTokenUtils;
     private final AuthenticationFacade facade;
@@ -170,6 +174,13 @@ public class UserService {
         userEntity.setRole(UserRole.ROLE_BUSINESS);
         userRepository.save(userEntity);
         businessRepository.delete(registration);
+
+        // user에게 준비중인 Shop 추가
+        Shop shop = Shop.builder()
+                .status(ShopStatus.PREPARING)
+                .owner(userEntity)
+                .build();
+        shopRepository.save(shop);
     }
 
     public void declineBusinessRegistration(Long id) {

@@ -1,6 +1,6 @@
 package com.example.shoppingmall.user.service;
 
-import com.example.shoppingmall.user.UserRole;
+import com.example.shoppingmall.user.entity.UserRole;
 import com.example.shoppingmall.user.entity.CustomUserDetails;
 import com.example.shoppingmall.user.entity.UserEntity;
 import com.example.shoppingmall.user.repo.UserRepository;

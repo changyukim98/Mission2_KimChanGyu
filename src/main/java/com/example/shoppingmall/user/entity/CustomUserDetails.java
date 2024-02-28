@@ -1,6 +1,5 @@
 package com.example.shoppingmall.user.entity;
 
-import com.example.shoppingmall.user.UserRole;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

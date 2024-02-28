@@ -8,7 +8,7 @@ import com.example.shoppingmall.useditem.entity.ProposalStatus;
 import com.example.shoppingmall.useditem.entity.PurchaseProposal;
 import com.example.shoppingmall.useditem.repo.ProposalRepository;
 import com.example.shoppingmall.useditem.repo.UsedItemRepository;
-import com.example.shoppingmall.user.UserRole;
+import com.example.shoppingmall.user.entity.UserRole;
 import com.example.shoppingmall.user.entity.CustomUserDetails;
 import com.example.shoppingmall.useditem.entity.UsedItem;
 import com.example.shoppingmall.user.entity.UserEntity;

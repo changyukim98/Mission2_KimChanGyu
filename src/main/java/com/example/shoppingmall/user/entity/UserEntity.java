@@ -1,6 +1,5 @@
 package com.example.shoppingmall.user.entity;
 
-import com.example.shoppingmall.user.UserRole;
 import jakarta.persistence.*;
 import lombok.*;
 
