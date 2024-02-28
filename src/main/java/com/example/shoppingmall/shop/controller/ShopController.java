@@ -1,9 +1,6 @@
 package com.example.shoppingmall.shop.controller;
 
-import com.example.shoppingmall.shop.Dto.ShopDto;
-import com.example.shoppingmall.shop.Dto.ShopRegDeclineDto;
-import com.example.shoppingmall.shop.Dto.ShopRegDto;
-import com.example.shoppingmall.shop.Dto.ShopRegResponseDto;
+import com.example.shoppingmall.shop.Dto.*;
 import com.example.shoppingmall.shop.service.ShopService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,5 +44,26 @@ public class ShopController {
             ShopRegDeclineDto dto
     ) {
         return shopService.declineShopReg(regId, dto);
+    }
+
+    @PostMapping("close")
+    public ShopCloseResponseDto shopCloseRequest(
+            @RequestBody
+            ShopCloseRequestDto dto
+    ) {
+        return shopService.shopCloseRequest(dto);
+    }
+
+    @GetMapping("close")
+    public List<ShopCloseResponseDto> readAllCloseRequest() {
+        return shopService.readAllCloseRequest();
+    }
+
+    @PostMapping("close/{reqId}")
+    public ShopDto closeShop(
+            @PathVariable("reqId")
+            Long reqId
+    ) {
+        return shopService.closeShop(reqId);
     }
 }

@@ -1,14 +1,9 @@
 package com.example.shoppingmall.shop.service;
 
 import com.example.shoppingmall.AuthenticationFacade;
-import com.example.shoppingmall.shop.Dto.ShopDto;
-import com.example.shoppingmall.shop.Dto.ShopRegDeclineDto;
-import com.example.shoppingmall.shop.Dto.ShopRegDto;
-import com.example.shoppingmall.shop.Dto.ShopRegResponseDto;
-import com.example.shoppingmall.shop.entity.Shop;
-import com.example.shoppingmall.shop.entity.ShopRegStatus;
-import com.example.shoppingmall.shop.entity.ShopRegistration;
-import com.example.shoppingmall.shop.entity.ShopStatus;
+import com.example.shoppingmall.shop.Dto.*;
+import com.example.shoppingmall.shop.entity.*;
+import com.example.shoppingmall.shop.repo.CloseRequestRepository;
 import com.example.shoppingmall.shop.repo.ShopRegRepository;
 import com.example.shoppingmall.shop.repo.ShopRepository;
 import com.example.shoppingmall.user.entity.UserEntity;
@@ -29,6 +24,7 @@ import java.util.Optional;
 public class ShopService {
     private final ShopRegRepository shopRegRepository;
     private final ShopRepository shopRepository;
+    private final CloseRequestRepository closeRequestRepository;
     private final AuthenticationFacade facade;
 
     public ShopRegResponseDto registerShop(ShopRegDto dto) {
@@ -37,6 +33,21 @@ public class ShopService {
         // 사업자 사용자만 등록 가능
         if (!currentUser.getRole().equals(UserRole.ROLE_BUSINESS))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+
+        Optional<Shop> optionalShop = shopRepository.findByOwnerId(currentUser.getId());
+        if (optionalShop.isEmpty())
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+        Shop shop = optionalShop.get();
+
+        // 이미 오픈한 상점이라면 등록 불가능
+        if (shop.getStatus().equals(ShopStatus.OPEN))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+
+        // 이미 대기중인 등록이 있다면 등록 불가능
+        if (shopRegRepository.existsByOwnerIdAndStatus(
+                currentUser.getId(),
+                ShopRegStatus.WAITING))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 
         ShopRegistration shopReg = ShopRegistration.builder()
                 .name(dto.getName())
@@ -119,5 +130,72 @@ public class ShopService {
         shopReg.setStatus(ShopRegStatus.DECLINED);
         shopReg.setDeclineReason(dto.getReason());
         return ShopRegResponseDto.fromEntity(shopRegRepository.save(shopReg));
+    }
+
+    public ShopCloseResponseDto shopCloseRequest(ShopCloseRequestDto dto) {
+        UserEntity currentUser = facade.getCurrentUserEntity();
+
+        // 사업자 사용자만 폐쇄 신청 가능
+        if (!currentUser.getRole().equals(UserRole.ROLE_BUSINESS))
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+
+        Optional<Shop> optionalShop = shopRepository.findByOwnerId(currentUser.getId());
+        if (optionalShop.isEmpty())
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+        Shop shop = optionalShop.get();
+
+        // 이미 신청한 요청인지 확인
+        if (closeRequestRepository.existsByOwnerId(currentUser.getId()))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+
+        // 오픈중인 Shop만 Close 가능
+        if (!shop.getStatus().equals(ShopStatus.OPEN))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+
+        ShopCloseRequest closeRequest = ShopCloseRequest.builder()
+                .owner(currentUser)
+                .reason(dto.getReason())
+                .build();
+        return ShopCloseResponseDto.fromEntity(closeRequestRepository.save(closeRequest));
+    }
+
+    public List<ShopCloseResponseDto> readAllCloseRequest() {
+        UserEntity currentUser = facade.getCurrentUserEntity();
+
+        // admin만 조회 가능
+        if (!currentUser.getRole().equals(UserRole.ROLE_ADMIN))
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+
+        return closeRequestRepository.findAll().stream()
+                .map(ShopCloseResponseDto::fromEntity)
+                .toList();
+    }
+
+    @Transactional
+    public ShopDto closeShop(Long reqId) {
+        UserEntity currentUser = facade.getCurrentUserEntity();
+
+        // admin만 조회 가능
+        if (!currentUser.getRole().equals(UserRole.ROLE_ADMIN))
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+
+        Optional<ShopCloseRequest> optionalRequest = closeRequestRepository.findById(reqId);
+        // request가 존재하지 않는 경우 BAD_REQUEST
+        if (optionalRequest.isEmpty())
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+
+        ShopCloseRequest request = optionalRequest.get();
+        UserEntity owner = request.getOwner();
+
+        Optional<Shop> optionalShop = shopRepository.findByOwnerId(owner.getId());
+        // owner의 shop이 없는 경우 에러
+        if(optionalShop.isEmpty())
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+
+        closeRequestRepository.delete(request);
+
+        Shop shop = optionalShop.get();
+        shop.setStatus(ShopStatus.CLOSED);
+        return ShopDto.fromEntity(shopRepository.save(shop));
     }
 }
