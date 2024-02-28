@@ -1,5 +1,7 @@
 package com.example.shoppingmall.shop.controller;
 
+import com.example.shoppingmall.shop.Dto.ShopDto;
+import com.example.shoppingmall.shop.Dto.ShopRegDeclineDto;
 import com.example.shoppingmall.shop.Dto.ShopRegDto;
 import com.example.shoppingmall.shop.Dto.ShopRegResponseDto;
 import com.example.shoppingmall.shop.service.ShopService;
@@ -16,7 +18,7 @@ import java.util.List;
 public class ShopController {
     private final ShopService shopService;
 
-    @PostMapping
+    @PostMapping("regs")
     public ShopRegResponseDto registerShop(
             @RequestBody
             ShopRegDto dto
@@ -24,8 +26,26 @@ public class ShopController {
         return shopService.registerShop(dto);
     }
 
-    @GetMapping
+    @GetMapping("regs")
     public List<ShopRegResponseDto> readAllShopReg() {
         return shopService.readAllShopReg();
+    }
+
+    @PostMapping("regs/{regId}/accept")
+    public ShopDto acceptShopReg(
+            @PathVariable("regId")
+            Long regId
+    ) {
+        return shopService.acceptShopReg(regId);
+    }
+
+    @PostMapping("regs/{regId}/decline")
+    public ShopRegResponseDto declineShopReg(
+            @PathVariable("regId")
+            Long regId,
+            @RequestBody
+            ShopRegDeclineDto dto
+    ) {
+        return shopService.declineShopReg(regId, dto);
     }
 }

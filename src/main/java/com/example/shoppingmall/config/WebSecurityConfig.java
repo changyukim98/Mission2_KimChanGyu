@@ -31,7 +31,6 @@ public class WebSecurityConfig {
                                 .anonymous()
 
                                 .requestMatchers(
-                                        "/users/current-user",
                                         "/users/fill-essential",
                                         "/users/update-avatar",
                                         "/users/business",
@@ -43,7 +42,9 @@ public class WebSecurityConfig {
                                         "/proposal/{id}/accept",
                                         "/proposal/{id}/decline",
                                         "/proposal/{id}/confirm",
-                                        "/shop"
+                                        "/shop/regs",
+                                        "/shop/regs/{regId}/accept",
+                                        "/shop/regs/{regId}/decline"
                                 )
                                 .authenticated()
 
