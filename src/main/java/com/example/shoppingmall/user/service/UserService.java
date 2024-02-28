@@ -4,12 +4,9 @@ import com.example.shoppingmall.AuthenticationFacade;
 import com.example.shoppingmall.shop.repo.ShopRepository;
 import com.example.shoppingmall.shop.entity.Shop;
 import com.example.shoppingmall.shop.entity.ShopStatus;
+import com.example.shoppingmall.user.dto.*;
 import com.example.shoppingmall.user.entity.UserRole;
-import com.example.shoppingmall.user.dto.EssentialInfoDto;
-import com.example.shoppingmall.user.dto.LoginDto;
-import com.example.shoppingmall.user.dto.RegisterDto;
 import com.example.shoppingmall.user.entity.BusinessRegistration;
-import com.example.shoppingmall.user.entity.CustomUserDetails;
 import com.example.shoppingmall.user.entity.UserEntity;
 import com.example.shoppingmall.jwt.JwtTokenUtils;
 import com.example.shoppingmall.jwt.JwtResponseDto;
@@ -20,7 +17,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -37,7 +33,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
-    private final JpaUserDetailsManager userDetailsManager;
     private final BusinessRepository businessRepository;
     private final ShopRepository shopRepository;
     private final PasswordEncoder passwordEncoder;
@@ -45,53 +40,62 @@ public class UserService {
     private final AuthenticationFacade facade;
 
     // 유저 계정 생성
-    public void createUser(RegisterDto registerDto) {
-        CustomUserDetails userDetails = CustomUserDetails.builder()
+    public UserDto createUser(RegisterDto registerDto) {
+        // 아이디 중복
+        if (userRepository.existsByUsername(registerDto.getUsername()))
+            throw new ResponseStatusException(HttpStatus.CONFLICT);
+
+        UserEntity userEntity = UserEntity.builder()
                 .username(registerDto.getUsername())
                 .password(passwordEncoder.encode(registerDto.getPassword()))
                 .role(UserRole.ROLE_INACTIVE)
                 .build();
-        userDetailsManager.createUser(userDetails);
+        return UserDto.fromEntity(userRepository.save(userEntity));
     }
 
     // 로그인 정보를 바탕으로 토큰 생성
     public JwtResponseDto loginUser(LoginDto loginDto) {
-        if (!userDetailsManager.userExists(loginDto.getUsername()))
+        if (!userRepository.existsByUsername(loginDto.getUsername()))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
-        UserDetails userDetails
-                = userDetailsManager.loadUserByUsername(loginDto.getUsername());
+        Optional<UserEntity> optionalUser =
+                userRepository.findByUsername(loginDto.getUsername());
+        if (optionalUser.isEmpty())
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        UserEntity userEntity = optionalUser.get();
 
-        if (!passwordEncoder.matches(loginDto.getPassword(), userDetails.getPassword()))
+        if (!passwordEncoder.matches(loginDto.getPassword(), userEntity.getPassword()))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
-        String token = jwtTokenUtils.generateToken(userDetails);
+        String token = jwtTokenUtils.generateToken(userEntity);
         return new JwtResponseDto(token);
     }
 
     // 필수 정보 입력
-    public void fillEssential(EssentialInfoDto dto) {
-        CustomUserDetails userDetails = facade.getCurrentUserDetails();
+    public UserDto fillEssential(EssentialInfoDto dto) {
+        UserEntity userEntity = facade.getCurrentUserEntity();
 
-        userDetails.setNickname(dto.getNickname());
-        userDetails.setFirstName(dto.getFirstName());
-        userDetails.setLastName(dto.getLastName());
-        userDetails.setAge(dto.getAge());
-        userDetails.setEmail(dto.getEmail());
-        userDetails.setPhone(dto.getPhone());
-        if (userDetails.getRole().equals(UserRole.ROLE_INACTIVE))
-            userDetails.setRole(UserRole.ROLE_USER);
-        userDetailsManager.updateUser(userDetails);
+        userEntity.setNickname(dto.getNickname());
+        userEntity.setFirstName(dto.getFirstName());
+        userEntity.setLastName(dto.getLastName());
+        userEntity.setAge(dto.getAge());
+        userEntity.setEmail(dto.getEmail());
+        userEntity.setPhone(dto.getPhone());
+        if (userEntity.getRole().equals(UserRole.ROLE_INACTIVE))
+            userEntity.setRole(UserRole.ROLE_USER);
+        return UserDto.fromEntity(userRepository.save(userEntity));
     }
 
-    public void updateProfileImage(String profileImagePath) {
-        CustomUserDetails userDetails = facade.getCurrentUserDetails();
+    public UserDto updateProfileImage(String profileImagePath) {
+        UserEntity userEntity = facade.getCurrentUserEntity();
 
-        userDetails.setProfileImagePath(profileImagePath);
-        userDetailsManager.updateUser(userDetails);
+        userEntity.setProfileImagePath(profileImagePath);
+        return UserDto.fromEntity(userRepository.save(userEntity));
     }
 
     public String saveImage(MultipartFile image) {
+        UserEntity currentUser = facade.getCurrentUserEntity();
+
         String profileDir = "media/profile/";
 
         // 폴더 만들기
@@ -103,8 +107,7 @@ public class UserService {
         }
 
         // 유저 이름 가져오기
-        String username
-                = SecurityContextHolder.getContext().getAuthentication().getName();
+        String username = currentUser.getUsername();
 
         // 파일 이름
         String originalFilename = image.getOriginalFilename();
@@ -126,26 +129,29 @@ public class UserService {
     }
 
     @Transactional
-    public void businessRegister(String businessNum) {
-        CustomUserDetails userDetails = facade.getCurrentUserDetails();
+    public BusinessRegDto businessRegister(String businessNum) {
+        UserEntity userEntity = facade.getCurrentUserEntity();
 
         // ROLE_USER에서만 사업자 유저로 업그레이드 신청 가능
-        if (!userDetails.getRole().equals(UserRole.ROLE_USER))
+        if (!userEntity.getRole().equals(UserRole.ROLE_USER))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+
+        if (businessRepository.existsByUserId(userEntity.getId()))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 
         BusinessRegistration businessRegistration
                 = BusinessRegistration.builder()
-                .user(userDetailsManager.loadUserEntityByUsername(userDetails.getUsername()))
+                .user(userEntity)
                 .businessNum(businessNum)
                 .build();
-        businessRepository.save(businessRegistration);
+        return BusinessRegDto.fromEntity(businessRepository.save(businessRegistration));
     }
 
     public List<BusinessRegistration> readBusinessRegistration() {
-        CustomUserDetails userDetails = facade.getCurrentUserDetails();
+        UserEntity userEntity = facade.getCurrentUserEntity();
 
         // ROLE_ADMIN에서만 조회 가능
-        if (!userDetails.getRole().equals(UserRole.ROLE_ADMIN))
+        if (!userEntity.getRole().equals(UserRole.ROLE_ADMIN))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
         return businessRepository.findAll();
@@ -153,10 +159,10 @@ public class UserService {
 
     @Transactional
     public void acceptBusinessRegistration(Long id) {
-        CustomUserDetails userDetails = facade.getCurrentUserDetails();
+        UserEntity currentUser = facade.getCurrentUserEntity();
 
         // ROLE_ADMIN에서만 승인 가능
-        if (!userDetails.getRole().equals(UserRole.ROLE_ADMIN))
+        if (!currentUser.getRole().equals(UserRole.ROLE_ADMIN))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
         // 가입 신청이 존재하지 않는 경우
@@ -165,29 +171,29 @@ public class UserService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 
         BusinessRegistration registration = optionalRegistration.get();
-        UserEntity userEntity = registration.getUser();
+        UserEntity register = registration.getUser();
 
         // 일반 유저일 경우에만 업그레이드 가능
-        if (!userEntity.getRole().equals(UserRole.ROLE_USER))
+        if (!register.getRole().equals(UserRole.ROLE_USER))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
-        userEntity.setRole(UserRole.ROLE_BUSINESS);
-        userRepository.save(userEntity);
+        register.setRole(UserRole.ROLE_BUSINESS);
+        userRepository.save(register);
         businessRepository.delete(registration);
 
         // user에게 준비중인 Shop 추가
         Shop shop = Shop.builder()
                 .status(ShopStatus.PREPARING)
-                .owner(userEntity)
+                .owner(register)
                 .build();
         shopRepository.save(shop);
     }
 
     public void declineBusinessRegistration(Long id) {
-        CustomUserDetails userDetails = facade.getCurrentUserDetails();
+        UserEntity currentUser = facade.getCurrentUserEntity();
 
         // ROLE_ADMIN에서만 거절 가능
-        if (!userDetails.getRole().equals(UserRole.ROLE_ADMIN))
+        if (!currentUser.getRole().equals(UserRole.ROLE_ADMIN))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
         // 가입 신청이 존재하지 않는 경우

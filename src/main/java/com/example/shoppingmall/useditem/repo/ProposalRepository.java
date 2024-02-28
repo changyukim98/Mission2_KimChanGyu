@@ -16,7 +16,7 @@ public interface ProposalRepository
     List<PurchaseProposal> findAllByItemId(Long itemId);
 
     // 구매자가 자신의 제안을 확인하는 메서드
-    List<PurchaseProposal> findAllByItemIdAndProposerUsername(Long itemId, String name);
+    List<PurchaseProposal> findAllByItemIdAndProposerId(Long itemId, Long proposerId);
 
     @Modifying
     @Query("UPDATE PurchaseProposal p " +

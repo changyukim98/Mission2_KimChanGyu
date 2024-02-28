@@ -8,7 +8,7 @@ import com.example.shoppingmall.useditem.entity.PurchaseProposal;
 import com.example.shoppingmall.useditem.entity.UsedItem;
 import com.example.shoppingmall.useditem.repo.ProposalRepository;
 import com.example.shoppingmall.useditem.repo.UsedItemRepository;
-import com.example.shoppingmall.user.entity.CustomUserDetails;
+import com.example.shoppingmall.user.entity.UserEntity;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,10 +34,10 @@ public class ProposalService {
 
         PurchaseProposal proposal = optionalProposal.get();
         UsedItem item = proposal.getItem();
-        CustomUserDetails userDetails = facade.getCurrentUserDetails();
+        UserEntity currentUser = facade.getCurrentUserEntity();
 
         // 제안서의 아이템의 소유자만 수락 가능
-        if (!item.getUser().getUsername().equals(userDetails.getUsername()))
+        if (!item.getUser().getId().equals(currentUser.getId()))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         proposal.setStatus(ProposalStatus.ACCEPTED);
         return ProposalDto.fromEntity(proposalRepository.save(proposal));
@@ -51,10 +51,10 @@ public class ProposalService {
 
         PurchaseProposal proposal = optionalProposal.get();
         UsedItem item = proposal.getItem();
-        CustomUserDetails userDetails = facade.getCurrentUserDetails();
+        UserEntity currentUser = facade.getCurrentUserEntity();
 
         // 제안서의 아이템의 소유자만 거절 가능
-        if (!item.getUser().getUsername().equals(userDetails.getUsername()))
+        if (!item.getUser().getId().equals(currentUser.getId()))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
         proposal.setStatus(ProposalStatus.DECLINED);
@@ -70,10 +70,10 @@ public class ProposalService {
 
         PurchaseProposal proposal = optionalProposal.get();
         UsedItem item = proposal.getItem();
-        CustomUserDetails userDetails = facade.getCurrentUserDetails();
+        UserEntity currentUser = facade.getCurrentUserEntity();
 
         // 제안서의 제안자만 확정 가능
-        if (!proposal.getProposer().getUsername().equals(userDetails.getUsername()))
+        if (!proposal.getProposer().getId().equals(currentUser.getId()))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
         // 제안의 상태가 ACCEPTED가 아닐 경우

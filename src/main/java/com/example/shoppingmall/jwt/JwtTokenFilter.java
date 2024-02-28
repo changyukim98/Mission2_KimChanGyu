@@ -1,6 +1,6 @@
 package com.example.shoppingmall.jwt;
 
-import com.example.shoppingmall.user.entity.CustomUserDetails;
+import com.example.shoppingmall.user.entity.UserEntity;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -41,7 +41,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 SecurityContext context
                         = SecurityContextHolder.createEmptyContext();
                 AbstractAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        CustomUserDetails.builder()
+                        UserEntity.builder()
                                 .username(username)
                                 .build(),
                         token, new ArrayList<>());

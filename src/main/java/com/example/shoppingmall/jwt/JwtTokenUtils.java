@@ -1,5 +1,6 @@
 package com.example.shoppingmall.jwt;
 
+import com.example.shoppingmall.user.entity.UserEntity;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
@@ -30,10 +31,10 @@ public class JwtTokenUtils {
                 .build();
     }
 
-    public String generateToken(UserDetails userDetails) {
+    public String generateToken(UserEntity userEntity) {
         Instant now = Instant.now();
         Claims jwtClaims = Jwts.claims()
-                .setSubject(userDetails.getUsername())
+                .setSubject(userEntity.getUsername())
                 .setIssuedAt(Date.from(now))
                 .setExpiration(Date.from(now.plusSeconds(60 * 60)));
 

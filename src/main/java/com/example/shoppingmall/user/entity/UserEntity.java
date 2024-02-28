@@ -37,21 +37,4 @@ public class UserEntity {
     private UserRole role;
     @Setter
     private String businessNum;
-
-    public static UserEntity fromUserDetails(CustomUserDetails userDetails) {
-        return UserEntity.builder()
-                .id(userDetails.getId())
-                .username(userDetails.getUsername())
-                .password(userDetails.getPassword())
-                .nickname(userDetails.getNickname())
-                .firstName(userDetails.getFirstName())
-                .lastName(userDetails.getLastName())
-                .age(userDetails.getAge())
-                .email(userDetails.getEmail())
-                .phone(userDetails.getPhone())
-                .profileImagePath(userDetails.getProfileImagePath())
-                .role(userDetails.getRole())
-                .businessNum(userDetails.getBusinessNum())
-                .build();
-    }
 }

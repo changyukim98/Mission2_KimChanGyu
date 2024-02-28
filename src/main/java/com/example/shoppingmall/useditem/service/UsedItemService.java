@@ -9,11 +9,9 @@ import com.example.shoppingmall.useditem.entity.PurchaseProposal;
 import com.example.shoppingmall.useditem.repo.ProposalRepository;
 import com.example.shoppingmall.useditem.repo.UsedItemRepository;
 import com.example.shoppingmall.user.entity.UserRole;
-import com.example.shoppingmall.user.entity.CustomUserDetails;
 import com.example.shoppingmall.useditem.entity.UsedItem;
 import com.example.shoppingmall.user.entity.UserEntity;
 import com.example.shoppingmall.user.repo.UserRepository;
-import com.example.shoppingmall.user.service.JpaUserDetailsManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -30,29 +28,29 @@ public class UsedItemService {
     private final UsedItemRepository usedItemRepository;
     private final UserRepository userRepository;
     private final ProposalRepository proposalRepository;
-    private final JpaUserDetailsManager manager;
     private final AuthenticationFacade facade;
 
     public UsedItemDto createUsedItem(UsedItemDto dto) {
-        CustomUserDetails userDetails = facade.getCurrentUserDetails();
+        UserEntity currentUser = facade.getCurrentUserEntity();
 
-        if (!userDetails.getRole().equals(UserRole.ROLE_USER))
+        // 일반 사용자의 경우에만 아이템 등록 가능
+        if (!currentUser.getRole().equals(UserRole.ROLE_USER))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
         UsedItem usedItem = UsedItem.builder()
                 .title(dto.getTitle())
                 .description(dto.getDescription())
                 .price(dto.getPrice())
-                .user(UserEntity.fromUserDetails(userDetails))
+                .user(currentUser)
                 .status(ItemStatus.ON_SALE)
                 .build();
         return UsedItemDto.fromEntity(usedItemRepository.save(usedItem));
     }
 
     public List<UsedItemDto> readAllUsedItem() {
-        CustomUserDetails userDetails = facade.getCurrentUserDetails();
+        UserEntity currentUser = facade.getCurrentUserEntity();
 
-        if (userDetails.getRole().equals(UserRole.ROLE_INACTIVE))
+        if (currentUser.getRole().equals(UserRole.ROLE_INACTIVE))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
         return usedItemRepository.findAll().stream()
@@ -65,9 +63,9 @@ public class UsedItemService {
         if (optionalItem.isEmpty())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 
-        CustomUserDetails userDetails = facade.getCurrentUserDetails();
         UsedItem usedItem = optionalItem.get();
-        if (!usedItem.getUser().getId().equals(userDetails.getId()))
+        UserEntity currentUser = facade.getCurrentUserEntity();
+        if (!usedItem.getUser().getId().equals(currentUser.getId()))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
         usedItem.setTitle(dto.getTitle());
@@ -82,8 +80,8 @@ public class UsedItemService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 
         UsedItem usedItem = optionalItem.get();
-        CustomUserDetails userDetails = facade.getCurrentUserDetails();
-        if (!usedItem.getUser().getUsername().equals(userDetails.getUsername()))
+        UserEntity currentUser = facade.getCurrentUserEntity();
+        if (!usedItem.getUser().getUsername().equals(currentUser.getUsername()))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
         usedItemRepository.deleteById(id);
@@ -97,22 +95,21 @@ public class UsedItemService {
 
         UsedItem usedItem = optionalItem.get();
         // 판매 완료일시 새로운 제안 불가
-        if (!usedItem.getStatus().equals(ItemStatus.SOLD_OUT))
+        if (usedItem.getStatus().equals(ItemStatus.SOLD_OUT))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 
-        CustomUserDetails userDetails = facade.getCurrentUserDetails();
+        UserEntity currentUser = facade.getCurrentUserEntity();
         // 비활성회원은 구매 제안 불가
-        if (userDetails.getRole().equals(UserRole.ROLE_INACTIVE))
+        if (currentUser.getRole().equals(UserRole.ROLE_INACTIVE))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
         // 등록자와 구매자가 같은 경우 구매 제안 불가
-        if (usedItem.getUser().getUsername().equals(userDetails.getUsername()))
+        if (usedItem.getUser().getId().equals(currentUser.getId()))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
-        UserEntity proposer = manager.loadUserEntityByUsername(userDetails.getUsername());
         PurchaseProposal proposal = PurchaseProposal.builder()
                 .item(usedItem)
-                .proposer(proposer)
+                .proposer(currentUser)
                 .status(ProposalStatus.WAITING)
                 .build();
 
@@ -126,21 +123,19 @@ public class UsedItemService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 
         // 비활성회원은 조회 불가
-        CustomUserDetails userDetails = facade.getCurrentUserDetails();
-        if (userDetails.getRole().equals(UserRole.ROLE_INACTIVE))
+        UserEntity currentUser = facade.getCurrentUserEntity();
+        if (currentUser.getRole().equals(UserRole.ROLE_INACTIVE))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
         UsedItem usedItem = optionalItem.get();
-        UserEntity viewer =
-                manager.loadUserEntityByUsername(userDetails.getUsername());
 
         // 조회자가 아이템의 소유자인 경우
-        if (usedItem.getUser().getUsername().equals(viewer.getUsername())) {
+        if (usedItem.getUser().getId().equals(currentUser.getId())) {
             return proposalRepository.findAllByItemId(itemId).stream()
                     .map(ProposalDto::fromEntity)
                     .toList();
         } else {
-            return proposalRepository.findAllByItemIdAndProposerUsername(itemId, viewer.getUsername())
+            return proposalRepository.findAllByItemIdAndProposerId(itemId, currentUser.getId())
                     .stream()
                     .map(ProposalDto::fromEntity)
                     .toList();

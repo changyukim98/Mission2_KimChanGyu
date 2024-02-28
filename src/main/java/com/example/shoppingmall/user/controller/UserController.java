@@ -1,8 +1,6 @@
 package com.example.shoppingmall.user.controller;
 
-import com.example.shoppingmall.user.dto.EssentialInfoDto;
-import com.example.shoppingmall.user.dto.LoginDto;
-import com.example.shoppingmall.user.dto.RegisterDto;
+import com.example.shoppingmall.user.dto.*;
 import com.example.shoppingmall.user.entity.BusinessRegistration;
 import com.example.shoppingmall.jwt.JwtResponseDto;
 import com.example.shoppingmall.user.service.UserService;
@@ -29,46 +27,37 @@ public class UserController {
         return userService.loginUser(dto);
     }
 
-    @GetMapping("/current-user")
-    public String test() {
-        return SecurityContextHolder.getContext().getAuthentication().getName();
-    }
-
     @PostMapping("/register")
-    public String userRegister(
+    public UserDto userRegister(
             @RequestBody
             RegisterDto dto
     ) {
-        userService.createUser(dto);
-        return "done";
+        return userService.createUser(dto);
     }
 
     @PostMapping("/fill-essential")
-    public String fillEssential(
+    public UserDto fillEssential(
             @RequestBody
             EssentialInfoDto dto
     ) {
-        userService.fillEssential(dto);
-        return "done";
+        return userService.fillEssential(dto);
     }
 
     @PostMapping("/update-avatar")
-    public String updateAvatar(
+    public UserDto updateAvatar(
             @RequestParam("image")
             MultipartFile image
     ) {
         String profilePath = userService.saveImage(image);
-        userService.updateProfileImage(profilePath);
-        return "done";
+        return userService.updateProfileImage(profilePath);
     }
 
     @PostMapping("/business")
-    public String businessRegister(
+    public BusinessRegDto businessRegister(
             @RequestParam("business-number")
             String businessNumber
     ) {
-        userService.businessRegister(businessNumber);
-        return "done";
+        return userService.businessRegister(businessNumber);
     }
 
     @GetMapping("/business")

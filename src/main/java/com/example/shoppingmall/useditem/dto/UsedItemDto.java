@@ -31,6 +31,7 @@ public class UsedItemDto {
                 .description(entity.getDescription())
                 .price(entity.getPrice())
                 .imagePath(entity.getImagePath())
+                .status(entity.getStatus())
                 .userId(entity.getUser().getId())
                 .build();
     }
