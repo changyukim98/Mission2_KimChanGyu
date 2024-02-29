@@ -1,5 +1,7 @@
 package com.example.shoppingmall.shop.shopitem.controller;
 
+import com.example.shoppingmall.shop.shopitem.dto.ShopItemOrderRequest;
+import com.example.shoppingmall.shop.shopitem.dto.ShopItemOrderResponse;
 import com.example.shoppingmall.shop.shopitem.dto.ShopItemRequest;
 import com.example.shoppingmall.shop.shopitem.dto.ShopItemResponse;
 import com.example.shoppingmall.shop.shopitem.service.ShopItemService;
@@ -44,5 +46,15 @@ public class ShopItemController {
     ) {
         shopItemService.deleteShopItem(itemId);
         return "done";
+    }
+
+    @PostMapping("/{itemId}/order")
+    public ShopItemOrderResponse orderShopItem(
+            @PathVariable("itemId")
+            Long itemId,
+            @RequestBody
+            ShopItemOrderRequest request
+    ) {
+        return shopItemService.orderShopItem(itemId, request);
     }
 }

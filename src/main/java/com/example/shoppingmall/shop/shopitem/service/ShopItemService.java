@@ -3,9 +3,14 @@ package com.example.shoppingmall.shop.shopitem.service;
 import com.example.shoppingmall.AuthenticationFacade;
 import com.example.shoppingmall.shop.entity.Shop;
 import com.example.shoppingmall.shop.repo.ShopRepository;
+import com.example.shoppingmall.shop.shopitem.dto.ShopItemOrderRequest;
+import com.example.shoppingmall.shop.shopitem.dto.ShopItemOrderResponse;
 import com.example.shoppingmall.shop.shopitem.dto.ShopItemRequest;
 import com.example.shoppingmall.shop.shopitem.dto.ShopItemResponse;
 import com.example.shoppingmall.shop.shopitem.entity.ShopItem;
+import com.example.shoppingmall.shop.shopitem.entity.ShopItemOrder;
+import com.example.shoppingmall.shop.shopitem.entity.ShopItemOrderStatus;
+import com.example.shoppingmall.shop.shopitem.repo.ShopItemOrderRepository;
 import com.example.shoppingmall.shop.shopitem.repo.ShopItemRepository;
 import com.example.shoppingmall.user.entity.UserEntity;
 import com.example.shoppingmall.user.entity.UserRole;
@@ -28,6 +33,7 @@ import java.util.UUID;
 public class ShopItemService {
     private final ShopItemRepository shopItemRepository;
     private final ShopRepository shopRepository;
+    private final ShopItemOrderRepository shopItemOrderRepository;
     private final AuthenticationFacade facade;
 
     public ShopItemResponse registerShopItem(
@@ -128,6 +134,32 @@ public class ShopItemService {
         deleteFile(shopItem.getImagePath());
 
         shopItemRepository.deleteById(itemId);
+    }
+
+    public ShopItemOrderResponse orderShopItem(
+            Long itemId,
+            ShopItemOrderRequest request
+    ) {
+        UserEntity currentUser = facade.getCurrentUserEntity();
+
+        // 비활성 사용자는 구매 불가
+        if (currentUser.getRole().equals(UserRole.ROLE_INACTIVE))
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+
+        Optional<ShopItem> optionalItem = shopItemRepository.findById(itemId);
+        // 아이템이 존재하지 않을 시
+        if (optionalItem.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        ShopItem shopItem = optionalItem.get();
+
+        ShopItemOrder order = ShopItemOrder.builder()
+                .shopItem(shopItem)
+                .customer(currentUser)
+                .quantity(request.getQuantity())
+                .status(ShopItemOrderStatus.WAITING)
+                .build();
+
+        return ShopItemOrderResponse.fromEntity(shopItemOrderRepository.save(order));
     }
 
     public String saveItemImage(MultipartFile image) {

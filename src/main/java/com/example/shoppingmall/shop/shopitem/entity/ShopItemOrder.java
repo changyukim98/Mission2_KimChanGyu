@@ -2,10 +2,7 @@ package com.example.shoppingmall.shop.shopitem.entity;
 
 import com.example.shoppingmall.user.entity.UserEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
 @Entity
@@ -17,10 +14,12 @@ public class ShopItemOrder {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Integer quantity;
-
     @ManyToOne
     private ShopItem shopItem;
     @ManyToOne
     private UserEntity customer;
+
+    private Integer quantity;
+    @Setter
+    private ShopItemOrderStatus status;
 }

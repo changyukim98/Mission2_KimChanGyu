@@ -48,7 +48,11 @@ public class WebSecurityConfig {
                                         "/shop/close",
                                         "/shop/close/{reqId}",
                                         "/shop/item",
-                                        "/shop/item/{itemId}"
+                                        "/shop/item/{itemId}",
+                                        "/shop/item/{itemId}/order",
+                                        "/shop/order/{orderId}/accept",
+                                        "/shop/order/{orderId}/decline",
+                                        "/shop/order/{orderId}/cancel"
                                 )
                                 .authenticated()
 
