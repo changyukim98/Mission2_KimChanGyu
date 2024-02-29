@@ -47,7 +47,7 @@ public class UserController {
             @RequestParam("image")
             MultipartFile image
     ) {
-        String profilePath = userService.saveImage(image);
+        String profilePath = userService.saveProfileImage(image);
         return userService.updateProfileImage(profilePath);
     }
 

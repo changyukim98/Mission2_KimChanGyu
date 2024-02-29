@@ -1,7 +1,7 @@
 package com.example.shoppingmall.shop.service;
 
 import com.example.shoppingmall.AuthenticationFacade;
-import com.example.shoppingmall.shop.Dto.*;
+import com.example.shoppingmall.shop.dto.*;
 import com.example.shoppingmall.shop.entity.*;
 import com.example.shoppingmall.shop.repo.CloseRequestRepository;
 import com.example.shoppingmall.shop.repo.ShopRegRepository;

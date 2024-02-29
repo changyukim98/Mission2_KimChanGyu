@@ -1,13 +1,10 @@
-package com.example.shoppingmall.shop.Dto;
+package com.example.shoppingmall.shop.dto;
 
 import com.example.shoppingmall.shop.entity.ShopCategory;
 import com.example.shoppingmall.shop.entity.ShopRegStatus;
 import com.example.shoppingmall.shop.entity.ShopRegistration;
-import com.example.shoppingmall.user.entity.UserEntity;
-import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Data;
-import lombok.Setter;
 
 @Data
 @Builder

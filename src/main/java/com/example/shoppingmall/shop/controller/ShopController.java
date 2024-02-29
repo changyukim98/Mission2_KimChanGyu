@@ -1,6 +1,6 @@
 package com.example.shoppingmall.shop.controller;
 
-import com.example.shoppingmall.shop.Dto.*;
+import com.example.shoppingmall.shop.dto.*;
 import com.example.shoppingmall.shop.service.ShopService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -66,4 +66,5 @@ public class ShopController {
     ) {
         return shopService.closeShop(reqId);
     }
+
 }

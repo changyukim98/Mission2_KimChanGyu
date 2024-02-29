@@ -9,7 +9,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PurchaseProposal {
+public class UsedItemOrder {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -18,9 +18,9 @@ public class PurchaseProposal {
     private UsedItem item;
 
     @ManyToOne
-    private UserEntity proposer;
+    private UserEntity buyer;
 
     @Setter
     @Enumerated(EnumType.STRING)
-    private ProposalStatus status;
+    private UsedItemOrderStatus status;
 }

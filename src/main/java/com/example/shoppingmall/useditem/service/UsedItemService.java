@@ -1,12 +1,12 @@
 package com.example.shoppingmall.useditem.service;
 
 import com.example.shoppingmall.AuthenticationFacade;
-import com.example.shoppingmall.useditem.dto.ProposalDto;
+import com.example.shoppingmall.useditem.dto.UsedItemOrderDto;
 import com.example.shoppingmall.useditem.dto.UsedItemDto;
-import com.example.shoppingmall.useditem.entity.ItemStatus;
-import com.example.shoppingmall.useditem.entity.ProposalStatus;
-import com.example.shoppingmall.useditem.entity.PurchaseProposal;
-import com.example.shoppingmall.useditem.repo.ProposalRepository;
+import com.example.shoppingmall.useditem.entity.UsedItemStatus;
+import com.example.shoppingmall.useditem.entity.UsedItemOrderStatus;
+import com.example.shoppingmall.useditem.entity.UsedItemOrder;
+import com.example.shoppingmall.useditem.repo.UsedItemOrderRepository;
 import com.example.shoppingmall.useditem.repo.UsedItemRepository;
 import com.example.shoppingmall.user.entity.UserRole;
 import com.example.shoppingmall.useditem.entity.UsedItem;
@@ -27,7 +27,7 @@ import java.util.Optional;
 public class UsedItemService {
     private final UsedItemRepository usedItemRepository;
     private final UserRepository userRepository;
-    private final ProposalRepository proposalRepository;
+    private final UsedItemOrderRepository usedItemOrderRepository;
     private final AuthenticationFacade facade;
 
     public UsedItemDto createUsedItem(UsedItemDto dto) {
@@ -42,7 +42,7 @@ public class UsedItemService {
                 .description(dto.getDescription())
                 .price(dto.getPrice())
                 .user(currentUser)
-                .status(ItemStatus.ON_SALE)
+                .status(UsedItemStatus.ON_SALE)
                 .build();
         return UsedItemDto.fromEntity(usedItemRepository.save(usedItem));
     }
@@ -87,36 +87,36 @@ public class UsedItemService {
         usedItemRepository.deleteById(id);
     }
 
-    public ProposalDto createProposal(Long itemId) {
+    public UsedItemOrderDto createOrder(Long itemId) {
         Optional<UsedItem> optionalItem = usedItemRepository.findById(itemId);
         // item이 존재하지 않을 경우
         if (optionalItem.isEmpty())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 
         UsedItem usedItem = optionalItem.get();
-        // 판매 완료일시 새로운 제안 불가
-        if (usedItem.getStatus().equals(ItemStatus.SOLD_OUT))
+        // 판매 완료일시 새로운 구매 불가
+        if (usedItem.getStatus().equals(UsedItemStatus.SOLD_OUT))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 
         UserEntity currentUser = facade.getCurrentUserEntity();
-        // 비활성회원은 구매 제안 불가
+        // 비활성회원은 구매 불가
         if (currentUser.getRole().equals(UserRole.ROLE_INACTIVE))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
-        // 등록자와 구매자가 같은 경우 구매 제안 불가
+        // 등록자와 구매자가 같은 경우 구매 불가
         if (usedItem.getUser().getId().equals(currentUser.getId()))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
-        PurchaseProposal proposal = PurchaseProposal.builder()
+        UsedItemOrder order = UsedItemOrder.builder()
                 .item(usedItem)
-                .proposer(currentUser)
-                .status(ProposalStatus.WAITING)
+                .buyer(currentUser)
+                .status(UsedItemOrderStatus.WAITING)
                 .build();
 
-        return ProposalDto.fromEntity(proposalRepository.save(proposal));
+        return UsedItemOrderDto.fromEntity(usedItemOrderRepository.save(order));
     }
 
-    public List<ProposalDto> readProposals(Long itemId) {
+    public List<UsedItemOrderDto> readItemOrders(Long itemId) {
         Optional<UsedItem> optionalItem = usedItemRepository.findById(itemId);
         // 아이템이 존재하지 않는 경우
         if (optionalItem.isEmpty())
@@ -131,13 +131,13 @@ public class UsedItemService {
 
         // 조회자가 아이템의 소유자인 경우
         if (usedItem.getUser().getId().equals(currentUser.getId())) {
-            return proposalRepository.findAllByItemId(itemId).stream()
-                    .map(ProposalDto::fromEntity)
+            return usedItemOrderRepository.findAllByItemId(itemId).stream()
+                    .map(UsedItemOrderDto::fromEntity)
                     .toList();
         } else {
-            return proposalRepository.findAllByItemIdAndProposerId(itemId, currentUser.getId())
+            return usedItemOrderRepository.findAllByItemIdAndBuyerId(itemId, currentUser.getId())
                     .stream()
-                    .map(ProposalDto::fromEntity)
+                    .map(UsedItemOrderDto::fromEntity)
                     .toList();
         }
     }

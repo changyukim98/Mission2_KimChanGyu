@@ -1,6 +1,6 @@
 package com.example.shoppingmall.useditem.entity;
 
-public enum ProposalStatus {
+public enum UsedItemOrderStatus {
     WAITING,
     ACCEPTED,
     DECLINED,

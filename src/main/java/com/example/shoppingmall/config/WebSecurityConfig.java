@@ -36,17 +36,19 @@ public class WebSecurityConfig {
                                         "/users/business",
                                         "/users/business/{id}/accept",
                                         "/users/business/{id}/decline",
-                                        "/item",
-                                        "/item/{id}",
-                                        "/item/{id}/proposal",
-                                        "/proposal/{id}/accept",
-                                        "/proposal/{id}/decline",
-                                        "/proposal/{id}/confirm",
+                                        "/used-item",
+                                        "/used-item/{id}",
+                                        "/used-item/{id}/order",
+                                        "/used-item/order/{id}/accept",
+                                        "/used-item/order/{id}/decline",
+                                        "/used-item/order/{id}/confirm",
                                         "/shop/regs",
                                         "/shop/regs/{regId}/accept",
                                         "/shop/regs/{regId}/decline",
                                         "/shop/close",
-                                        "/shop/close/{reqId}"
+                                        "/shop/close/{reqId}",
+                                        "/shop/item",
+                                        "/shop/item/{itemId}"
                                 )
                                 .authenticated()
 

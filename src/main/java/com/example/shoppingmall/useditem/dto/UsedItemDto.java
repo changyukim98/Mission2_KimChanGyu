@@ -1,6 +1,6 @@
 package com.example.shoppingmall.useditem.dto;
 
-import com.example.shoppingmall.useditem.entity.ItemStatus;
+import com.example.shoppingmall.useditem.entity.UsedItemStatus;
 import com.example.shoppingmall.useditem.entity.UsedItem;
 import lombok.*;
 
@@ -20,7 +20,7 @@ public class UsedItemDto {
     @Setter
     private String imagePath;
     @Setter
-    private ItemStatus status;
+    private UsedItemStatus status;
 
     private Long userId;
 

@@ -1,6 +1,6 @@
 package com.example.shoppingmall.useditem.controller;
 
-import com.example.shoppingmall.useditem.dto.ProposalDto;
+import com.example.shoppingmall.useditem.dto.UsedItemOrderDto;
 import com.example.shoppingmall.useditem.dto.UsedItemDto;
 import com.example.shoppingmall.useditem.service.UsedItemService;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +10,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/item")
+@RequestMapping("/used-item")
 public class UsedItemController {
     private final UsedItemService usedItemService;
 
@@ -46,19 +46,19 @@ public class UsedItemController {
         return "done";
     }
 
-    @PostMapping("/{id}/proposal")
-    public ProposalDto createProposal(
+    @PostMapping("/{id}/order")
+    public UsedItemOrderDto createOrder(
             @PathVariable("id")
             Long itemId
     ) {
-        return usedItemService.createProposal(itemId);
+        return usedItemService.createOrder(itemId);
     }
 
-    @GetMapping("/{id}/proposal")
-    public List<ProposalDto> readProposal(
+    @GetMapping("/{id}/order")
+    public List<UsedItemOrderDto> readOrder(
             @PathVariable("id")
             Long itemId
     ) {
-        return usedItemService.readProposals(itemId);
+        return usedItemService.readItemOrders(itemId);
     }
 }

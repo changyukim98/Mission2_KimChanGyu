@@ -1,6 +1,6 @@
-package com.example.shoppingmall.useditem.entity;
+package com.example.shoppingmall.shop.shopitem.entity;
 
-import com.example.shoppingmall.user.entity.UserEntity;
+import com.example.shoppingmall.shop.entity.Shop;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -9,23 +9,22 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UsedItem {
+public class ShopItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Setter
-    private String title;
+    private String name;
     @Setter
     private String description;
     @Setter
-    private Integer price;
+    private Long price;
     @Setter
     private String imagePath;
     @Setter
-    @Enumerated(EnumType.STRING)
-    private UsedItemStatus status;
+    private Integer stock;
 
     @ManyToOne
-    private UserEntity user;
+    private Shop shop;
 }
