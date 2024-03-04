@@ -189,7 +189,7 @@ public class ShopService {
 
         Optional<Shop> optionalShop = shopRepository.findByOwnerId(owner.getId());
         // owner의 shop이 없는 경우 에러
-        if(optionalShop.isEmpty())
+        if (optionalShop.isEmpty())
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
 
         closeRequestRepository.delete(request);
@@ -197,5 +197,39 @@ public class ShopService {
         Shop shop = optionalShop.get();
         shop.setStatus(ShopStatus.CLOSED);
         return ShopDto.fromEntity(shopRepository.save(shop));
+    }
+
+    public List<ShopDto> searchShops(String nameQ, String category) {
+        UserEntity currentUser = facade.getCurrentUserEntity();
+        // 비활성사용자는 조회불가
+        if (currentUser.getRole().equals(UserRole.ROLE_INACTIVE))
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+
+        List<Shop> shopList;
+        if (nameQ == null && category == null) {
+            // 검색 조건이 없는 경우
+            shopList = shopRepository.findAllByOrderByLastPurchasedDesc();
+        }
+        if (nameQ != null && category == null) {
+            // 이름만 가지고 검색
+            shopList = shopRepository.findAllByNameContaining(nameQ);
+        } else if (nameQ == null && category != null) {
+            // 카테고리만으로 검색
+            try {
+                shopList = shopRepository.findAllByCategory(
+                        ShopCategory.valueOf(category));
+            } catch (IllegalArgumentException e) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            }
+        } else {
+            try {
+                shopList = shopRepository.findAllByNameContainingAndCategory(
+                        nameQ, ShopCategory.valueOf(category));
+            } catch (IllegalArgumentException e) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            }
+        }
+
+        return shopList.stream().map(ShopDto::fromEntity).toList();
     }
 }

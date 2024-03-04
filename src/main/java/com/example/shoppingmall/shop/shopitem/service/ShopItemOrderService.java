@@ -2,6 +2,7 @@ package com.example.shoppingmall.shop.shopitem.service;
 
 import com.example.shoppingmall.AuthenticationFacade;
 import com.example.shoppingmall.shop.entity.Shop;
+import com.example.shoppingmall.shop.repo.ShopRepository;
 import com.example.shoppingmall.shop.shopitem.dto.ShopItemOrderRequest;
 import com.example.shoppingmall.shop.shopitem.dto.ShopItemOrderResponse;
 import com.example.shoppingmall.shop.shopitem.entity.ShopItem;
@@ -17,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalTime;
 import java.util.Optional;
 
 @Slf4j
@@ -25,6 +27,7 @@ import java.util.Optional;
 public class ShopItemOrderService {
     private final ShopItemOrderRepository shopItemOrderRepository;
     private final ShopItemRepository shopItemRepository;
+    private final ShopRepository shopRepository;
     private final AuthenticationFacade facade;
 
     @Transactional
@@ -54,6 +57,9 @@ public class ShopItemOrderService {
 
         shopItem.setStock(shopItem.getStock() - order.getQuantity());
         shopItemRepository.save(shopItem);
+
+        shop.setLastPurchased(LocalTime.now());
+        shopRepository.save(shop);
 
         order.setStatus(ShopItemOrderStatus.ACCEPTED);
         return ShopItemOrderResponse.fromEntity(shopItemOrderRepository.save(order));
@@ -94,6 +100,10 @@ public class ShopItemOrderService {
         // 본인의 주문만 처리 가능함
         if (!order.getCustomer().getId().equals(currentUser.getId()))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+
+        // 이미 처리된 주문인 경우
+        if (!order.getStatus().equals(ShopItemOrderStatus.WAITING))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 
         order.setStatus(ShopItemOrderStatus.CANCELED);
         return ShopItemOrderResponse.fromEntity(shopItemOrderRepository.save(order));

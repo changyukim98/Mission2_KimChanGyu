@@ -3,10 +3,7 @@ package com.example.shoppingmall.shop.shopitem.service;
 import com.example.shoppingmall.AuthenticationFacade;
 import com.example.shoppingmall.shop.entity.Shop;
 import com.example.shoppingmall.shop.repo.ShopRepository;
-import com.example.shoppingmall.shop.shopitem.dto.ShopItemOrderRequest;
-import com.example.shoppingmall.shop.shopitem.dto.ShopItemOrderResponse;
-import com.example.shoppingmall.shop.shopitem.dto.ShopItemRequest;
-import com.example.shoppingmall.shop.shopitem.dto.ShopItemResponse;
+import com.example.shoppingmall.shop.shopitem.dto.*;
 import com.example.shoppingmall.shop.shopitem.entity.ShopItem;
 import com.example.shoppingmall.shop.shopitem.entity.ShopItemOrder;
 import com.example.shoppingmall.shop.shopitem.entity.ShopItemOrderStatus;
@@ -24,6 +21,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -160,6 +158,20 @@ public class ShopItemService {
                 .build();
 
         return ShopItemOrderResponse.fromEntity(shopItemOrderRepository.save(order));
+    }
+
+    public List<ShopItemSearchDto> searchItems(String nameQ, Long priceMin, Long priceMax) {
+        UserEntity currentUser = facade.getCurrentUserEntity();
+        // 비활성사용자는 조회불가
+        if (currentUser.getRole().equals(UserRole.ROLE_INACTIVE))
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+
+        if (priceMin > priceMax)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+
+        List<ShopItem> itemList
+                = shopItemRepository.searchShopItems(nameQ, priceMin, priceMax);
+        return itemList.stream().map(ShopItemSearchDto::fromEntity).toList();
     }
 
     public String saveItemImage(MultipartFile image) {

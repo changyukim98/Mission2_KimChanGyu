@@ -1,14 +1,13 @@
 package com.example.shoppingmall.shop.shopitem.controller;
 
-import com.example.shoppingmall.shop.shopitem.dto.ShopItemOrderRequest;
-import com.example.shoppingmall.shop.shopitem.dto.ShopItemOrderResponse;
-import com.example.shoppingmall.shop.shopitem.dto.ShopItemRequest;
-import com.example.shoppingmall.shop.shopitem.dto.ShopItemResponse;
+import com.example.shoppingmall.shop.shopitem.dto.*;
 import com.example.shoppingmall.shop.shopitem.service.ShopItemService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -56,5 +55,17 @@ public class ShopItemController {
             ShopItemOrderRequest request
     ) {
         return shopItemService.orderShopItem(itemId, request);
+    }
+
+    @GetMapping("/search")
+    public List<ShopItemSearchDto> searchShopItems(
+            @RequestParam(value = "nameQ")
+            String nameQ,
+            @RequestParam(value = "priceMin")
+            Long priceMin,
+            @RequestParam(value = "priceMax")
+            Long priceMax
+    ) {
+        return shopItemService.searchItems(nameQ, priceMin, priceMax);
     }
 }

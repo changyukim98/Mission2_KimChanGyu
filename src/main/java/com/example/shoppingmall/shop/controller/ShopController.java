@@ -67,4 +67,14 @@ public class ShopController {
         return shopService.closeShop(reqId);
     }
 
+    @GetMapping("/search")
+    public List<ShopDto> searchShops(
+            @RequestParam(value = "nameQ", required = false)
+            String nameQ,
+            @RequestParam(value = "category", required = false)
+            String category
+    ) {
+        return shopService.searchShops(nameQ, category);
+    }
+
 }

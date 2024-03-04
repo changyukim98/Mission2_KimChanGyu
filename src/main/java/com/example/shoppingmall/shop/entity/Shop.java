@@ -4,6 +4,8 @@ import com.example.shoppingmall.user.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalTime;
+
 @Getter
 @Entity
 @Builder
@@ -24,6 +26,8 @@ public class Shop {
     @Setter
     @Enumerated(EnumType.STRING)
     private ShopStatus status;
+    @Setter
+    private LocalTime lastPurchased;
 
     @OneToOne
     private UserEntity owner;
