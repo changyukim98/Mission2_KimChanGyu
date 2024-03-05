@@ -5,7 +5,7 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build
 media/
-
+src/main/resources/application-ncp.yaml
 
 ### STS ###
 .apt_generated

@@ -1,17 +1,22 @@
 package com.example.shoppingmall.user.service;
 
 import com.example.shoppingmall.AuthenticationFacade;
+import com.example.shoppingmall.api.captcha.NcpCaptchaApiService;
 import com.example.shoppingmall.shop.repo.ShopRepository;
 import com.example.shoppingmall.shop.entity.Shop;
 import com.example.shoppingmall.shop.entity.ShopStatus;
 import com.example.shoppingmall.user.dto.*;
+import com.example.shoppingmall.user.entity.LoginAttempt;
 import com.example.shoppingmall.user.entity.UserRole;
 import com.example.shoppingmall.user.entity.BusinessRegistration;
 import com.example.shoppingmall.user.entity.UserEntity;
 import com.example.shoppingmall.jwt.JwtTokenUtils;
 import com.example.shoppingmall.jwt.JwtResponseDto;
 import com.example.shoppingmall.user.repo.BusinessRepository;
+import com.example.shoppingmall.user.repo.LoginAttemptRepository;
 import com.example.shoppingmall.user.repo.UserRepository;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,22 +26,29 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.io.IOException;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
+    private final NcpCaptchaApiService ncpApiService;
     private final UserRepository userRepository;
     private final BusinessRepository businessRepository;
     private final ShopRepository shopRepository;
+    private final LoginAttemptRepository loginAttemptRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenUtils jwtTokenUtils;
     private final AuthenticationFacade facade;
+    private final Gson gson;
 
     // 유저 계정 생성
     public UserDto createUser(RegisterDto registerDto) {
@@ -65,6 +77,36 @@ public class UserService {
 
         if (!passwordEncoder.matches(loginDto.getPassword(), userEntity.getPassword()))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+
+        String keyJsonString = ncpApiService.getCaptchaKey(0);
+
+        JsonObject keyJsonObject = gson.fromJson(keyJsonString, JsonObject.class);
+        String captchaKey = keyJsonObject.get("key").getAsString();
+
+        byte[] imageBytes = ncpApiService.getCaptchaImage(captchaKey);
+
+        String fileName = UUID.randomUUID().toString() + "_"
+                + userEntity.getUsername() + ".png";
+        String filePath = "media/captcha/" + fileName;
+
+        try {
+            InputStream inputStream = new ByteArrayInputStream(imageBytes);
+            BufferedImage bufferedImage = ImageIO.read(inputStream);
+
+            File outputFile = new File(filePath);
+            ImageIO.write(bufferedImage, "png", outputFile);
+            System.out.println("이미지가 성공적으로 저장되었습니다.");
+        } catch (IOException e) {
+            System.err.println("이미지 저장 중 오류가 발생했습니다: " + e.getMessage());
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        LoginAttempt loginAttempt = LoginAttempt.builder()
+                .username(userEntity.getUsername())
+                .captchaKey(captchaKey)
+                .imagePath(filePath)
+                .build();
+        loginAttemptRepository.save(loginAttempt);
 
         String token = jwtTokenUtils.generateToken(userEntity);
         return new JwtResponseDto(token);

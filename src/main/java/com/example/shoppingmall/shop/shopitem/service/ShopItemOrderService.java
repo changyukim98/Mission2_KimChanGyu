@@ -85,7 +85,7 @@ public class ShopItemOrderService {
         if (!order.getStatus().equals(ShopItemOrderStatus.WAITING))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 
-        order.setStatus(ShopItemOrderStatus.ACCEPTED);
+        order.setStatus(ShopItemOrderStatus.DECLINED);
         return ShopItemOrderResponse.fromEntity(shopItemOrderRepository.save(order));
     }
 
